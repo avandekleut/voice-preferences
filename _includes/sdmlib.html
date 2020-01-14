@@ -18,7 +18,7 @@
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="Computer-Memory">Computer Memory<a class="anchor-link" href="#Computer-Memory">&#182;</a></h1><p>You can locate a house on a street using, for example, a $3$-digit combination of the digits $0$ through $9$. This gives you $10^3 = 1000$ possible addresses. Maybe your friend Robin lives at address $831$.</p>
-<p>Similarly, you can specify a location in <em>computer memory</em> using a 64-digit combination of the binary digits ("bits") $0$ and $1$. This gives you $2^{64} = 18,446,744,073,709,551,616$ possible memory addresses to choose from. (In reality we do not use all of these addresses, but the principle still holds). We use these addresses to store data. Like addresses, data are stored in the form of $0$s and $1$s, and are usually $64$ bits long (just like addresses). Maybe data $01100011 \; 00110110 \; 11000001 \; 00111010 \; 01011100 \; 11101001 \; 00110101$ lives at address $10101100 \; 10010111 \; 00111010 \; 01011100 \; 10000011 \; 01101100 \; 11000110$.</p>
+<p>Similarly, you can specify a location in <em>computer memory</em> using a 64-digit combination of the binary digits ("bits") $0$ and $1$. This gives you $2^{64} = 18,446,744,073,709,551,616$ possible memory addresses to choose from. (In reality we do not use all of these addresses, but the principle still holds). We use these addresses to store data. Like addresses, data are stored in the form of $0$s and $1$s, and are usually $64$ bits long (just like street addresses).</p>
 <h1 id="Motivation">Motivation<a class="anchor-link" href="#Motivation">&#182;</a></h1><p>SDM was originally developed by Pentti Kanerva as a mathematical model for human long-term memory. Kanerva noted that high-dimensional spaces have some properties in common with human long-term memory. For example, similar memories can be 'nearby' in the same sense that points in high-dimensional space can be 'nearby'. Furthermore, two random memories tend to be unrelated just like two random points in high-dimensional space tend to be far apart. For Kanerva, a sufficiently high number of dimensions begins at least in the hundreds, if not in the thousands.</p>
 <p>The simplest high-dimensional space is the binary space $\{0, 1 \}^N$. This space has $N$ dimensions, where each dimension can <em>only</em> take on the value $0$ or $1$. On a $64$-bit computer, every possible address is in $\{0, 1 \}^{64}$.</p>
 <p>This space is a good candidate for our mathematical model of human long-term memory because:</p>
@@ -35,7 +35,64 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Solution-to-the-Problem">Solution to the Problem<a class="anchor-link" href="#Solution-to-the-Problem">&#182;</a></h1><p>To solve this problem, Kanerva suggests only implementing a small, randomly sampled number of <em>hard addresses</em> - actual locations in computer memory corresponding to a point in high-dimensional space.</p>
+<h1 id="Solution-to-the-Problem">Solution to the Problem<a class="anchor-link" href="#Solution-to-the-Problem">&#182;</a></h1><p>To solve this problem, Kanerva suggests only implementing a small, randomly sampled number of <em>hard addresses</em> - actual locations in computer memory corresponding to a point in high-dimensional space. We use $M$ to denote the number of hard addresses to implement. $M$ is often small, like $10^6$ (small relative to $2^N$).</p>
+<p>If we randomly pick an address from $\{ 0, 1 \}^N$, we are extremely unlikely to pick an address that has a corresponding hard address. In fact, the odds are</p>
+$$
+\frac{M}{2^N}
+$$<p>which, if we take $M=10^6$ and $N=1000$ (common values used in SDM), the odds are approximately $9.3 \times 10^{-296}$.</p>
+<p>Let's arrange our hard addresses in an $M \times N$ matrix where each row is a hard address. We can call this matrix $A$.</p>
+$$
+A = \begin{bmatrix}
+1 &amp; 0 &amp; 0 &amp; 1 &amp; 1 \dots &amp; 1 \\
+0 &amp; 0 &amp; 1 &amp; 1 &amp; 0 \dots &amp; 1 \\
+1 &amp; 1 &amp; 0 &amp; 1 &amp; 1 \dots &amp; 1 \\
+1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \dots &amp; 1 \\
+\vdots &amp; &amp; &amp; &amp; &amp; \vdots \\
+0 &amp; 1 &amp; 1 &amp; 1 &amp; 0 \dots &amp; 1 \\
+\end{bmatrix}
+$$<p>Imagine trying to write to an $N$-bit address called $x$. It is unlikely that $x$ is a row of $A$. How, then, can we write to this address? We instead pick hard addresses that are 'close' to $x$. In this case, two addresses are close if the <em>Hamming distance</em> between them is below some threshold $d$.</p>
+<p>The Hamming distance between two binary strings of equal length is the number of places where their bits do not match. For example, the Hamming distance between $1001 \; 1111$ and $1011 \; 1110$ is $2$.</p>
+<p>We go through each row $i$ in $A$. If the Hamming distance between $x$ $A_i$ is smaller than $d$, then we consider that address to be 'nearby'.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can make a vector $h$ of length $M$ to keep track of the Hamming distance between each row of $A$ and our desired address $x$. We can make a similar vector $y$ that is $1$ where $h &lt; d$ and $0$ otherwise.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="{{site.url}}/assets/sdm1.drawio.svg" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To recap: we have a matrix $A$ of addresses. It has $M$ rows and $N$ columns, corresponding to the $M$ hard addresses and the $N$ bits of each address. Given an $N$-bit address $x$ that we would like to access, we construct a vector $y$. If a row $i$ of $A$ has a Hamming distance to $x$ that is smaller than $d$, we set $y_i$ to $1$ and otherwise set it to $0$.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>How do we write to memory? Let's say we have some data $w$ that we want to write. $w$ is a binary vector of length $U$. In normal computer memory, we pick a single address $x$ and overwrite the contents of that memory with $w$. However, in our new formulation, we have <em>multiple</em> addresses in $A$ that are considered nearby. We do not want to simply replace the contents of all of the nearby addresses with $w$. Why is this a bad idea? Because it's possible that some of those addresses are close to $x$ but also close to some other address $x'$, although $x$ and $x'$ may not themselves be close. We do not want to destroy information that was stored at previous times by just overwriting it.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Instead, we have a memory matrix $C$ of shape $M \times U$ that stores <em>counters</em>. For each element in $y_i$ of $y$, if the $y_i = 1$, then we will write $C_i$. For each bit $j$ from $1$ to $U$, if $w_j=1$, then we increment the $c_{ij}$. If $w_j$ is a $0$, then we decrement $C_{ij}$. The process of writing to memory becomes <strong>distributed</strong> across multiple addresses.</p>
 
 </div>
 </div>
