@@ -1,0 +1,1 @@
+jupyter nbconvert sdmlib.ipynb --to html --template basic --output sdmlib.html

@@ -1,0 +1,57 @@
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Overview">Overview<a class="anchor-link" href="#Overview">&#182;</a></h1><p>Sparse Distributed Memory (SDM) is a technique for simulating computer memory with significantly more storage than is actually possible. Modern computer use $64$-bit memory, but SDM allows us to simulate $1000$-bit memory (or more!) by distributing the operations of reading and writing over a small subset of randomly sampled addresses.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="sdmlib"><code>sdmlib</code><a class="anchor-link" href="#sdmlib">&#182;</a></h2><p><code>sdmlib</code> is a simple Python library providing an implementation of SDM that is intended for use with <code>numpy</code> arrays. I wrote this library for personal use while writing my undergraduate thesis in Neuroscience.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr>
+<h2 id="Computer-Memory">Computer Memory<a class="anchor-link" href="#Computer-Memory">&#182;</a></h2><p>You can locate a house on a street using, for example, a $3$-digit combination of the digits $0$ through $9$. This gives you $10^3 = 1000$ possible addresses. Maybe your friend Robin lives at address $831$.</p>
+<p>Similarly, you can specify a location in <em>computer memory</em> using a 64-digit combination of the binary digits ("bits") $0$ and $1$. This gives you $2^{64} = 18,446,744,073,709,551,616$ possible memory addresses to choose from. (In reality we do not use all of these addresses, but the principle still holds). We use these addresses to store data. Like addresses, data are stored in the form of $0$s and $1$s, and are usually $64$ bits long (just like addresses). Maybe data $01100011 \; 00110110 \; 11000001 \; 00111010 \; 01011100 \; 11101001 \; 00110101$ lives at address $10101100 \; 10010111 \; 00111010 \; 01011100 \; 10000011 \; 01101100 \; 11000110$.</p>
+<h2 id="Motivation">Motivation<a class="anchor-link" href="#Motivation">&#182;</a></h2><p>SDM was originally developed by Pentti Kanerva as a mathematical model for human long-term memory. Kanerva noted that high-dimensional spaces have some properties in common with human long-term memory. For example, similar memories can be 'nearby' in the same sense that points in high-dimensional space can be 'nearby'. Furthermore, two random memories tend to be unrelated just like two random points in high-dimensional space tend to be far apart. For Kanerva, a sufficiently high number of dimensions begins at least in the hundreds, if not in the thousands.</p>
+<p>The simplest interesting high-dimensional space is the <em>binary</em> space $\{0, 1 \}^N$. For us in three-dimensional space every object has an $x$, $y$ and $z$ position that can be any real number. In the $N$-dimensional binary space $\{0, 1 \}^N$, each dimension can only take on the value $0$ or $1$. This space is exactly the set of all binary addresses of length $N$. This space is a good candidate for our mathematical model of human long-term memory because</p>
+<ol>
+<li>it is high-dimensional</li>
+<li>it is "simple" (only two value)</li>
+<li>it can hypothetically be implemented on a digital computer</li>
+</ol>
+<h2 id="The-Problem">The Problem<a class="anchor-link" href="#The-Problem">&#182;</a></h2><p>The possibility of implementing a model of human memory on a computer is exciting for sure. However, even the modern computers that use $64$-bit addresses are not sufficiently 'high-dimensional' for the properties Kanerva was interested in. We are interested in having, for example, $1000$ bit memory addresses. Sadly, this would require $2^{1000}$ locations to store data in our computer and our universe only have $2^{265}$ atoms, so we will run out of atoms before we can construct such a computer.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Solution-to-the-Problem">Solution to the Problem<a class="anchor-link" href="#Solution-to-the-Problem">&#182;</a></h2><p>To solve this problem, Kanerva suggests only implementing a small, randomly sampled number of <em>hard addresses</em> - actual locations in computer memory corresponding to a point in high-dimensional space.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>jupyter nbconvert sdmlib.ipynb --to html --template basic --output sdmlib.html
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+ 
+

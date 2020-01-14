@@ -1,0 +1,19 @@
+<header class="site-header" role="banner">
+
+  <div class="wrapper">
+    <nav class="home-nav">
+      <a class="page-link" rel="author" href="{{ "/" | relative_url }}">home</a>
+    </nav>
+    <nav class="site-nav">
+      {% assign topnav = site.data.nav.topnav%}
+      {%- for item in site.data.nav.topnav -%}
+        {% if item.url %}
+          <a class="page-link" href="{{site.url}}/{{item.url}}">{{item.title}}</a>
+        {% elsif item.permalink%}
+          <a class="page-link" href="{{site.permalink}}">{{item.title}}</a>
+        {% endif %}
+
+      {%- endfor -%}
+    </nav>
+  </div>
+</header>
