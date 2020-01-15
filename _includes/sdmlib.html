@@ -68,7 +68,7 @@ $$<p>Imagine trying to write to an $N$-bit address called $x$. It is unlikely th
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><img src="{{site.url}}/assets/sdm1.drawio.svg" alt=""></p>
+<p><img src="{{site.url}}/assets/sdm1.drawio.png"></p>
 
 </div>
 </div>
@@ -93,6 +93,33 @@ $$<p>Imagine trying to write to an $N$-bit address called $x$. It is unlikely th
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Instead, we have a memory matrix $C$ of shape $M \times U$ that stores <em>counters</em>. For each element in $y_i$ of $y$, if the $y_i = 1$, then we will write $C_i$. For each bit $j$ from $1$ to $U$, if $w_j=1$, then we increment the $c_{ij}$. If $w_j$ is a $0$, then we decrement $C_{ij}$. The process of writing to memory becomes <strong>distributed</strong> across multiple addresses.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="{{site.url}}/assets/sdm2.drawio.png" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>How do we read from memory? Each row of $C$ contains $U$ counters, some of which may be positive and some of which may be negative. If a counter $C_{ij}$ is very positive, then mostly $1$s have been written to that counter. If a counter $C_{ij}$ is very negative, then mostly $0$s have been written to that counter. Let's say we have a memory address $x$ and we would like to read the data stored at that address. Like writing to memory, this address is almost certainly not represented in $A$. Therefore, we find all addresses in $A$ that are nearby to $x$ and create our vector $y$ representing which addresses are nearby. For every address in $A$ that is nearby, we take the corresponding row in $C$ and add them all together element-wise. We call this sum $s$, a vector of length $U$. For each bit position $j$ from $1$ to $U$, if more $1$s have been written to that position over every nearby address than $0$s, then $s_j$ will be positive. If more $0$s have been written to that position over every nearby address than $1$s, then $s_j$ will be negative. Therefore, we can threshold $s$ around $0$ to convert $s$ a binary vector $z$ representing the "average" binary vector stored across nearby addresses:
+$$
+z = \begin{cases} 1 &amp; s &gt; 0 \\ 0 &amp; s \leq 0  \end{cases}
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="{{site.url}}/assets/sdm3.drawio.png" alt=""></p>
 
 </div>
 </div>
