@@ -1,17 +1,15 @@
 /*
-TODO:
-- randomize order of voice presentation
--
+pitch variation, confidence
 */
-
 
 // colour constants
 const WHITE = 255;
 const GRAY = 150;
 const DARK_GRAY = 100;
 const BLACK = 0;
-const LIGHT_GREEN = 'lightgreen'
-const RED = 'red'
+const LIGHT_GREEN = 'lightgreen';
+const RED = 'lightcoral';
+const BLUE = 'lightblue';
 
 // number of voices
 const N = 6;
@@ -26,23 +24,26 @@ let sortGraph = createSortGraph(N);
 //sortQueue: used to retrieve next pair of voices needed for comparison
 let sortQueue = createSortQueue(N);
 
-let sounds;         // sounds for each task for each voice
+let sounds; // sounds for each task for each voice
 
-let prompt;         // text at top of screen
-let promptIndex;    // which prompt we're one
-let firstSound;     // first sound button
-let secondSound;    // second sound button
-let firstSelect;    // first select button
-let secondSelect;   // second select button
-let submit;         // submit button
-let ding;           // noise for submit button
-let progress1;      // progress bar for whole study
-let progress2;      // progress bar for specific task
+let task; // text at top of screen
+let taskIndex; // which task we're one
+let firstSound; // first sound button
+let secondSound; // second sound button
+let firstSelect; // first select button
+let secondSelect; // second select button
+let submit; // submit button
+let ding; // noise for submit button
+let magic1; // sound for progression
+let magic2; // sound for progression
+let magic3; // sound for progression
+let progress1; // progress bar for whole study
+let progress2; // progress bar for specific task
 
 /* 'Abstract' class to be extended. Essentially a rectangle with a state
  * and a method for detecting if the mouse is within its boundaries. */
 class Button {
-  constructor(x, y, width, height, colour, altcolour){
+  constructor(x, y, width, height, colour, altcolour) {
     this.x = x;
     this.y = y;
     this.height = height;
@@ -51,58 +52,57 @@ class Button {
     this.altcolour = altcolour;
   }
 
-  hitTest(){
-    return (this.x - this.width/2 < mouseX)
-        && (mouseX < this.x + this.width/2)
-        && (this.y - this.height/2 < mouseY)
-        && (mouseY < this.y + this.height/2);
+  hitTest() {
+    return (this.x - this.width / 2 < mouseX) &&
+      (mouseX < this.x + this.width / 2) &&
+      (this.y - this.height / 2 < mouseY) &&
+      (mouseY < this.y + this.height / 2);
   }
 }
 
 /* Can be turned on/off by clicking. Plays a sound when clicked. */
-class SoundButton extends Button{
+class SoundButton extends Button {
 
-  constructor(x, y, width, height, colour, altcolour, filename){
+  constructor(x, y, width, height, colour, altcolour) {
     super(x, y, width, height, colour, altcolour);
-    this.sound = loadSound(this.filename);
+    this.sound = undefined;
     this.img = playImg;
   }
 
-  toggleSound(on=true){
-    if (this.hitTest() && !this.sound.isPlaying() && on){
-      this.sound.play();
-      print("PLAYING VOICE "+this.sound.url);
+  toggleSound(on = true) {
+    if (this.hitTest() && !this.sound.isPlaying() && on) {
+      this.sound.loop();
     } else {
       this.sound.pause();
     }
   }
 
-  draw(){
-    if (this.hitTest()){
+  draw() {
+    if (this.hitTest()) {
       fill(this.altcolour);
     } else {
       fill(this.colour);
     }
     rect(this.x, this.y, this.width, this.height);
-    if (this.sound.isPlaying()){
-      image(pauseImg, this.x, this.y, this.width*0.75, this.height*0.75);
+    if (this.sound.isPlaying()) {
+      image(pauseImg, this.x, this.y, this.width * 0.75, this.height * 0.75);
     } else {
-      image(playImg, this.x, this.y, this.width*0.75, this.height*0.75);
+      image(playImg, this.x, this.y, this.width * 0.75, this.height * 0.75);
     }
 
   }
 }
 
 /* Can be turned on/off by clicking. Selects a voice when clicked. */
-class SelectButton extends Button{
-  constructor(x, y, width, height, colour, altcolour, name){
+class SelectButton extends Button {
+  constructor(x, y, width, height, colour, altcolour, name) {
     super(x, y, width, height, colour, altcolour);
     this.selected = false;
     this.name = name;
   }
 
-  toggleSelect(on=true){
-    if (this.hitTest() && !this.selected && on){
+  toggleSelect(on = true) {
+    if (this.hitTest() && !this.selected && on) {
       this.selected = true;
       this.colour = DARK_GRAY;
     } else {
@@ -111,8 +111,8 @@ class SelectButton extends Button{
     }
   }
 
-  draw(){
-    if (this.hitTest()){
+  draw() {
+    if (this.hitTest()) {
       fill(this.altcolour);
     } else {
       fill(this.colour);
@@ -120,34 +120,34 @@ class SelectButton extends Button{
     rect(this.x, this.y, this.width, this.height);
     fill(BLACK);;
     textStyle(NORMAL);
-    textSize(min(this.width, this.height)/2);
+    textSize(min(this.width, this.height) / 2);
     text("Select", this.x, this.y);
   }
 }
 
 /* Clicking submits the current choice of voice. */
-class SubmitButton extends Button{
-  constructor(x, y, width, height, colour, altcolour){
+class SubmitButton extends Button {
+  constructor(x, y, width, height, colour, altcolour) {
     super(x, y, width, height, colour, altcolour);
   }
 
-  submit(){
-    if (this.hitTest()){
-      if (firstSelect.selected){
-        saveGreaterThan(firstSelect.name, secondSelect.name);
-        ding.play();
-        nextVoices();
-      } else if (secondSelect.selected) {
-        saveGreaterThan(secondSelect.name, firstSelect.name);
+  submit() {
+    if (this.hitTest()) {
+      if (firstSelect.selected || secondSelect.selected) {
+        if (firstSelect.selected) {
+          saveGreaterThan(firstSelect.name, secondSelect.name);
+        } else {
+          saveGreaterThan(secondSelect.name, firstSelect.name);
+        }
         ding.play();
         nextVoices();
       }
     }
   }
 
-  draw(){
+  draw() {
 
-    if (this.hitTest()){
+    if (this.hitTest()) {
       fill(this.altcolour);
     } else {
       fill(this.colour);
@@ -155,21 +155,29 @@ class SubmitButton extends Button{
     rect(this.x, this.y, this.width, this.height);
     fill(BLACK);;
     textStyle(BOLD);
-    textSize(min(this.width, this.height)/2);
+    textSize(min(this.width, this.height) / 2);
     text("Submit", this.x, this.y);
   }
 }
 
-class Prompt{
-  constructor(text, kind){
+class Prompt {
+  constructor(text, kind) {
     this.text = text;
     this.kind = kind;
   }
 }
 
-const INFORMATIVE = 0;
-const INSTRUCTIVE = 1;
-const PROMPTS = [
+const TRAIT = 0;
+const INFORMATIVE = 1;
+const INSTRUCTIVE = 2;
+
+const TASKS = [
+  new Prompt("Which is more masculine?", TRAIT),
+  new Prompt("Which is less mature?", TRAIT),
+  new Prompt("Which is more attractive?", TRAIT),
+  new Prompt("Which is less confident?", TRAIT),
+  new Prompt("Which do you prefer?", TRAIT),
+
   new Prompt("Guiding you through a workout", INSTRUCTIVE),
   new Prompt("Helping you follow a recipe", INSTRUCTIVE),
   new Prompt("Giving you directions to the museum", INSTRUCTIVE),
@@ -180,71 +188,89 @@ const PROMPTS = [
 ]
 
 let results = {
-  "Guiding you through a workout":[0,1,2,3,4,5],
-  "Helping you follow a recipe":[0,1,2,3,4,5],
-  "Giving you directions to the museum":[0,1,2,3,4,5],
-  "Delivering the weather forecast":[0,1,2,3,4,5],
-  "Getting your meetings and appointments":[0,1,2,3,4,5],
-  "Making suggestions for a restaurant":[0,1,2,3,4,5]
+  "Which is more masculine?": [0, 1, 2, 3, 4, 5],
+  "Which is less mature?": [0, 1, 2, 3, 4, 5],
+  "Which is more attractive?": [0, 1, 2, 3, 4, 5],
+  "Which is less confident?": [0, 1, 2, 3, 4, 5],
+  "Which do you prefer?": [0, 1, 2, 3, 4, 5],
+  "Guiding you through a workout": [0, 1, 2, 3, 4, 5],
+  "Helping you follow a recipe": [0, 1, 2, 3, 4, 5],
+  "Giving you directions to the museum": [0, 1, 2, 3, 4, 5],
+  "Delivering the weather forecast": [0, 1, 2, 3, 4, 5],
+  "Getting your meetings and appointments": [0, 1, 2, 3, 4, 5],
+  "Making suggestions for a restaurant": [0, 1, 2, 3, 4, 5]
 }
 
-class PromptDisplay{
-  constructor(x, y, prompt, size=30){
+class PromptDisplay {
+  constructor(x, y, task, size = 30) {
     this.x = x;
     this.y = y;
-    this.prompt = prompt;
+    this.task = task;
     this.size = size;
   }
 
-  draw(){
+  draw() {
     textSize(this.size);
     textStyle(NORMAL);
     fill(BLACK);
-    text(this.prompt.text, this.x, this.y);
+    text(this.task.text, this.x, this.y);
   }
 }
 
-function nextVoices(){
+function nextVoices() {
   let pair = nextPair();
-  if (!pair){
-    results[prompt.prompt.text].sort(mySort);
+  if (!pair) {
+    results[task.task.text].sort(mySort);
     sortGraph = createSortGraph(N);
     sortQueue = createSortQueue(N);
     nextPrompt();
   }
   [firstSelect.name, secondSelect.name] = nextPair();
-  firstSound.sound = sounds[firstSelect.name][prompt.prompt.text];
-  secondSound.sound = sounds[secondSelect.name][prompt.prompt.text];
+  firstSound.sound = sounds[firstSelect.name][task.task.text];
+  secondSound.sound = sounds[secondSelect.name][task.task.text];
 }
 
-function nextPrompt(){
-  promptIndex++;
-  prompt.prompt = PROMPTS[promptIndex];
-  if (!prompt.prompt){
+function nextPrompt() {
+  taskIndex++;
+  task.task = TASKS[taskIndex];
+  if (!task.task) {
     studyOver();
   }
+  if (taskIndex > 0) {
+    if (taskIndex === 4) {
+      magic3.play();
+    } else if (Math.random() > 0.5) {
+      magic1.play();
+    } else {
+      magic2.play();
+    }
+  }
 }
 
-function studyOver(){
-  fill(220);
-  rect(canvas.width/2, canvas.height/2, canvas.width, canvas.height);
+function studyOver() {
   noLoop();
+  background(220);
+  magic1.play();
+  magic2.play();
+  magic3.play();
+  let id = prompt("Please enter your study ID.");
+  createStringDict(results).saveJSON(id);
 }
 
-function soundFileName(name, text){
+function soundFileName(name, text) {
   const map = {
-    0:'A',
-    1:'B',
-    2:'C',
-    3:'D',
-    4:'E',
-    5:'F'
+    0: 'A',
+    1: 'B',
+    2: 'C',
+    3: 'D',
+    4: 'E',
+    5: 'F'
   }
 
-  return 'scripts/audio/'+map[name]+'/'+text+'.wav';
+  return 'scripts/audio/' + map[name] + '/' + text + '.wav';
 }
 
-function setup(){
+function setup() {
   // global alignment modes
   frameRate(15);
   rectMode(CENTER);
@@ -252,102 +278,105 @@ function setup(){
   imageMode(CENTER);
 
   // create a centered canvas
-  const canvasWidth  = 600;
+  const canvasWidth = 600;
   const canvasHeight = 600;
-  const x   = (windowWidth - canvasWidth)/2;
-  const y   = (windowHeight - canvasHeight)/2;
+  const x = (windowWidth - canvasWidth) / 2;
+  const y = (windowHeight - canvasHeight) / 2;
   const cnv = createCanvas(canvasWidth, canvasHeight);
   cnv.position(x, y);
   background(220);
 
   sounds = {};
-  for (let v=0; v<N; v++){
+  for (let v = 0; v < N; v++) {
     sounds[v] = {}
-    for (let p of PROMPTS){
-      sounds[v][p.text] = loadSound(soundFileName(v, p.text));
+    for (let p of TASKS) {
+      sounds[v][p.text] = loadSound(encodeURIComponent(soundFileName(v, p.text)));
     }
   }
 
   // assets for play/pause/submit
-  playImg  = loadImage('assets/play.png');
+  playImg = loadImage('assets/play.png');
   pauseImg = loadImage('assets/pause.svg');
-  ding     = loadSound('assets/ding.mp3');
+  ding = loadSound('assets/ding.mp3');
+  ding.setVolume(0.3);
+  ding.rate(0.875);
+  magic1 = loadSound('assets/magic1.mp3');
+  magic2 = loadSound('assets/magic2.mp3');
+  magic3 = loadSound('assets/magic3.mp3');
 
   // button size parameters
-  const width  = min(canvas.width, canvas.height)/4;
-  const margin = width/8;
+  const width = min(canvas.width, canvas.height) / 4;
+  const margin = width / 8;
 
-  prompt       = new PromptDisplay(
-    canvas.width/2,
-    canvas.height/4,
+  task = new PromptDisplay(
+    canvas.width / 2,
+    canvas.height / 4,
     undefined);
 
-  firstSound   = new SoundButton(
-    canvas.width/4,
-    canvas.height/2,
-    width-margin,
-    width-margin,
+  firstSound = new SoundButton(
+    canvas.width / 4,
+    canvas.height / 2,
+    width - margin,
+    width - margin,
     WHITE,
-    GRAY,
-    undefined);
+    GRAY);
 
-  secondSound  = new SoundButton(
-    canvas.width*3/4,
-    canvas.height/2,
-    width-margin,
-    width-margin,
+  secondSound = new SoundButton(
+    canvas.width * 3 / 4,
+    canvas.height / 2,
+    width - margin,
+    width - margin,
     WHITE,
-    GRAY,
-    undefined);
+    GRAY);
 
-  firstSelect  = new SelectButton(
-    canvas.width/4,
-    canvas.height*3/4,
-    width-margin,
-    width/2-margin,
+  firstSelect = new SelectButton(
+    canvas.width / 4,
+    canvas.height * 3 / 4,
+    width - margin,
+    width / 2 - margin,
     WHITE,
     GRAY)
 
   secondSelect = new SelectButton(
-    canvas.width*3/4,
-    canvas.height*3/4,
-    width-margin,
-    width/2-margin,
+    canvas.width * 3 / 4,
+    canvas.height * 3 / 4,
+    width - margin,
+    width / 2 - margin,
     WHITE,
     GRAY)
 
-  submit       = new SubmitButton(
-    canvas.width/2,
-    canvas.height*7/8,
-    width-margin,
-    width/2-margin,
+  submit = new SubmitButton(
+    canvas.width / 2,
+    canvas.height * 7 / 8,
+    width - margin,
+    width / 2 - margin,
     LIGHT_GREEN,
     RED
   )
 
-  promptIndex = -1;
+  taskIndex = -1;
   nextPrompt();
   nextVoices();
 }
 
-function drawProgress(){
-  fill(DARK_GRAY);
-  rect(canvas.width/2, canvas.height/32, canvas.width*remainingPrompts(), canvas.height/16);
-  rect(canvas.width/2, canvas.height*31/32, canvas.width*remainingPairs(), canvas.height/16);
+function drawProgress() {
+  fill(BLUE);
+  rect(canvas.width / 2, canvas.height / 32, canvas.width * remainingPrompts(), canvas.height / 16);
+  rect(canvas.width / 2, canvas.height * 31 / 32, canvas.width * remainingPairs(), canvas.height / 16);
 
   fill(BLACK);
-  textSize(canvas.height/32);
+  textSize(canvas.height / 32);
   textStyle(NORMAL);
-  text(`${100*remainingPrompts().toPrecision(2)}`,canvas.width/2, canvas.height/32)
-  text(`${100*remainingPairs().toPrecision(2)}`,canvas.width/2, canvas.height*31/32)
+  text(`${remainingPrompts()}/${TASKS.length}`, canvas.width / 2, canvas.height / 32)
+  text(`${remainingPairs()}/${N*(N-1)/2}`, canvas.width / 2, canvas.height * 31 / 32)
 }
 
 /*
- * The P5.js draw loop is just used to display the buttons and the prompts.
+ * The P5.js draw loop is just used to display the buttons and the tasks.
  */
-function draw(){
+function draw() {
   background(220);
-  prompt.draw();
+  task.draw();
   firstSound.draw();
   secondSound.draw();
   firstSelect.draw();
@@ -361,7 +390,7 @@ function draw(){
  * button and that button's voice isn't already playing, it will play it.
  * Otherwise, it toggles off both voices.
  */
-function mouseClicked(){
+function mouseClicked() {
   firstSound.toggleSound();
   secondSound.toggleSound();
   submit.submit();
@@ -371,23 +400,23 @@ function mouseClicked(){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function createSortGraph(n){
+function createSortGraph(n) {
   let sortGraph = []
-  for (let i=0; i<n; i++){
+  for (let i = 0; i < n; i++) {
     sortGraph[i] = [];
-    for (let j=0; j<n; j++){
+    for (let j = 0; j < n; j++) {
       sortGraph[i][j] = 0;
     }
   }
   return sortGraph;
 }
 
-function createSortQueue(n){
+function createSortQueue(n) {
   let sortQueue = []
-  for (let i=0; i<n; i++){
+  for (let i = 0; i < n; i++) {
     sortQueue[i] = []
-    for (let j=0; j<n; j++){
-      if (j < i){
+    for (let j = 0; j < n; j++) {
+      if (j < i) {
         sortQueue[i][j] = 1;
       } else {
         sortQueue[i][j] = 0;
@@ -397,23 +426,29 @@ function createSortQueue(n){
   return sortQueue
 }
 
-function mySort(a, b){
-  if (sortGraph[a][b] == 1){
+function mySort(a, b) {
+  if (sortGraph[a][b] == 1) {
     return 1;
   } else {
     return -1;
   }
 }
 
+function shuffle(arr) {
+  for (let i = 0; i < arr.length; i++) {
+    [arr[i], arr[j]] = arr[j], arr[Math.floor(Math.random() * arr.length)];
+  }
+}
+
 /* given a boolean matrix representing a relation, compute the transitive
  * closure of the relation.
  */
-function transitiveClosure(){
+function transitiveClosure() {
   let n = sortGraph.length;
-  for (let k=0; k<n; k++){
-    for (let i=0; i<n; i++){
-      for (let j=0; j<n; j++){
-        if (sortGraph[i][k] && sortGraph[k][j]){
+  for (let k = 0; k < n; k++) {
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        if (sortGraph[i][k] && sortGraph[k][j]) {
           // i > k and k > j so i > j
           sortGraph[i][j] = 1;
           sortQueue[i][j] = 0; // which one?
@@ -424,7 +459,7 @@ function transitiveClosure(){
   }
 }
 
-function saveGreaterThan(a, b){
+function saveGreaterThan(a, b) {
   // call if a > b
   sortGraph[a][b] = 1; // a > b
   sortQueue[a][b] = 0; // remove from queue
@@ -432,29 +467,35 @@ function saveGreaterThan(a, b){
   transitiveClosure();
 }
 
-function nextPair(){
+function nextPair() {
   let n = sortGraph.length;
-  for (let i=0; i<n; i++){
-    for (let j=0; j<n; j++){
-      if (sortQueue[i][j] === 1){
-        return [i, j];
+  let indices = [];
+  for (let i = 0; i < n; i++) {
+    indices.push(i);
+  }
+  indices = shuffle(indices);
+
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (sortQueue[indices[i]][indices[j]] === 1) {
+        return [indices[i], indices[j]];
       }
     }
   }
   return;
 }
 
-function remainingPairs(){
+function remainingPairs() {
   let n = sortGraph.length;
   let total = 0;
-  for (let i=0; i<n; i++){
-    for (let j=0; j<n; j++){
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
       total += sortQueue[i][j];
     }
   }
-  return total/(n*(n-1)/2);
+  return total;
 }
 
-function remainingPrompts(){
-  return (PROMPTS.length - promptIndex)/PROMPTS.length;
+function remainingPrompts() {
+  return TASKS.length - taskIndex;
 }
