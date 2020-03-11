@@ -1,0 +1,26 @@
+---
+layout: projectpage
+title: projects
+---
+<div>
+{% for pg in site.pages %}
+  {% if pg.dir == page.dir %}
+    {% if pg.url != page.url %}
+    <div class=project-list-item>
+      <div>
+        <a href="{{pg.url}}">
+          <div class=project-list-img>
+            <img src="{{site.url}}/assets/{{pg.svg}}" alt="">
+          </div>
+          <div>
+            <p class="project-list-title"=>{{pg.title}}</p>
+            <p class="project-list-desc">{{pg.desc}}</p>
+          </div>
+          </a>
+      </div>
+      <hr>
+    </div>
+    {% endif %}
+  {% endif %}
+{% endfor %}
+</div>
