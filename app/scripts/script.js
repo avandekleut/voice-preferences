@@ -265,7 +265,7 @@ function studyOver() {
   magic1.play();
   magic2.play();
   magic3.play();
-  let id = prompt("Please enter your study ID.");
+  let id = prompt("Please enter your age and gender like M23 or F25 and email the results to avandekleut@uwaterloo.ca.");
   createStringDict(results).saveJSON(id);
 }
 
