@@ -303,11 +303,19 @@ function studyOver() {
   sounds.magic2.play();
   sounds.magic3.play();
   submitResults();
+  sounds.magic1.play();
+  sounds.magic2.play();
 }
 
 function submitResults(){
-  let gender = prompt("Please enter your gender.");
-  let age = prompt("Please enter your age.");
+  let gender;
+  let age;
+  do {
+    gender = prompt("Please enter your gender.");
+  } while (!gender)
+  do {
+    age = prompt("Please enter your age.");
+  } while (!age)
   let id = Math.floor(Math.random()*100);
   let params = {
     'results':JSON.stringify(results),
