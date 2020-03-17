@@ -149,10 +149,10 @@ function setup() {
   // create a centered canvas
   const canvasWidth = 600;
   const canvasHeight = 600;
-  const x = (windowWidth - canvasWidth) / 2;
-  const y = (windowHeight - canvasHeight) / 2;
+  // const x = (windowWidth - canvasWidth) / 2;
+  // const y = (windowHeight - canvasHeight) / 2;
   const cnv = createCanvas(canvasWidth, canvasHeight);
-  cnv.position(x, y);
+  // cnv.position(x, y);
   background(220);
 
   sortGraph = createSortGraph(N);
