@@ -300,6 +300,7 @@ function nextPrompt() {
 function studyOver() {
   noLoop();
   background(220);
+  text("Thank you for your participation!", canvas.width/2, canvas.height/2);
   sounds.magic1.play();
   sounds.magic2.play();
   sounds.magic3.play();
