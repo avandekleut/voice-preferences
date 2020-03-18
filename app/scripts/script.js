@@ -151,6 +151,7 @@ function setup() {
   const canvasHeight = 600;
   // const x = (windowWidth - canvasWidth) / 2;
   // const y = (windowHeight - canvasHeight) / 2;
+  pixelDensity(1);
   const cnv = createCanvas(canvasWidth, canvasHeight);
   // cnv.position(x, y);
   background(220);
